@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `apm config set ssh true` / `apm config set allow-protocol-fallback true` persist transport preferences to `~/.apm/config.json` so SSH-only and corporate GHES users no longer need to re-pass `--ssh` / `--allow-protocol-fallback` (or export env vars in shell profiles) on every `apm install`. Resolution order: CLI flag > `APM_GIT_PROTOCOL` / `APM_ALLOW_PROTOCOL_FALLBACK` env var > `apm config` > built-in default. `apm config unset ssh` and `apm config unset allow-protocol-fallback` remove the persisted value. (#1243)
+
 ### Fixed
 
 - MCP server installation now respects the `targets:` whitelist exactly like `apm install`: drop a non-listed runtime even when its `.cursor/`, `.codex/`, or other on-disk signal exists. Previously the MCP install path called `active_targets()` reading the singular `target:` key only, so projects whitelisting `targets: [copilot]` could still receive `~/.codex/config.toml` and `.cursor/mcp.json` writes from foreign signals. The fix audits both paths: (a) the call site at `local_bundle_handler.py` now forwards the canonical plural list; (b) the gate now delegates to the same `resolve_targets` resolver that backs `apm install` skills, so a malformed `targets:` field (conflicting `target:` + `targets:`, `targets: []`, or unknown target name) fails closed with the same `[x]` red error voice + remediation block. The same delegation closes a related asymmetry: a greenfield project (no `targets:`, no `--target` flag, no detected signals) used to silently fall back to `[copilot]` for MCP-only invocations, while `apm install` raised `NoHarnessError` on the same input -- both surfaces now error consistently. Drop lines now use the `[i] Skipped MCP config for X  (active targets: Y)` format mirroring the canonical `Targets: X  (source: Y)` provenance line. The `-g`/`--global` carve-out is unchanged: `apm install -g --mcp NAME` writes to user-scope (`~/.config/...`, `~/.codex/`, etc.) bypassing the project-scope gate by design. (#1335)
