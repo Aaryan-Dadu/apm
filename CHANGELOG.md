@@ -24,6 +24,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added APM-managed runtime binary resolution before PATH lookup; `find_runtime_binary()` now includes path-traversal security guards via `validate_path_segments` and `ensure_path_within`. (#605)
+- Added codex >= v0.116 compatibility warning for GitHub Models in `setup-codex.sh` and `setup-codex.ps1`. (#605)
+- Added `LAST_COMPAT_VERSION_MINOR` constant to both Codex setup scripts so the compatibility boundary is defined once. (#605)
 - `apm uninstall` now accepts the same marketplace notation as `apm install` (e.g. `my-plugin@official`) -- no more `owner/repo` lookup before removing a plugin you installed by name. Refs resolve via lockfile first (offline), then registry fallback, with a supply-chain guard that refuses any registry-returned canonical not already in the lockfile. ([#1323](https://github.com/microsoft/apm/issues/1323))
 - Added `--target/-t` option to `apm update` command to specify agent target (#1297)
 - `apm pack --marketplace=FORMATS` filters which marketplace formats are built in a single run; accepts comma-separated names and sentinels `all`/`none`. (#1317)
